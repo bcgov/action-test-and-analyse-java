@@ -14,9 +14,15 @@ inputs:
     required: true
 
   ### Typical / recommended
-  node_version:
-    description: Node version, defaults to 16 (LTS)
-    default: "16"
+  distribution:
+    description: Dunno
+    default: "temurin"
+  java-version:
+    description: Java version, defaults to 17 (LTS)
+    default: "17"
+  cache:
+    description: Dunno
+    default: "maven"
   sonar_args:
     # https://docs.sonarcloud.io/advanced-setup/analysis-parameters/
     description: SonarCloud command line arguments
@@ -51,17 +57,19 @@ runs:
         repository: ${{ inputs.repository }}
 
     # Setup node and cache dir
-    - uses: actions/setup-node@v3
+    - name: Set up JDK 17 and Caching maven dependencies
+      uses: actions/setup-java@v3
       with:
-        node-version: ${{ inputs.node_version }}
-    - id: npm-cache-dir
-      shell: bash
-      run: echo "dir=$(npm config get cache)" >> $GITHUB_OUTPUT
-    - uses: actions/cache@v3
+        distribution: ${{ inputs.distribution }}
+        java-version: ${{ inputs.java-version }}
+        cache: ${{ inputs.cache }}
+    - name: Cache local Maven repository
+      uses: actions/cache@v3
       with:
-        path: ${{ steps.npm-cache-dir.outputs.dir }}
-        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: ${{ runner.os }}-node-
+        path: ~/.m2/repository
+        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          ${{ runner.os }}-maven-
 
     # Run tests, hopefully generating coverage for SonarCloud
     - name: Run Tests
