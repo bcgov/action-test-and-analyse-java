@@ -40,24 +40,42 @@ inputs:
 runs:
   using: composite
   steps:
-    # Shallow clone is faster, but SonarCloud requires a full clone
-    - uses: actions/checkout@v3
-      if: (! inputs.sonar_project_token)
-      with:
-        repository: ${{ inputs.repository }}
+    # Process inputs
+    - id: inputs
+      shell: bash
+      run: |
+        # Process inputs
+        if [ -z ${{ inputs.sonar_project_token }} ]; then
+          shallowClone=1
+          sonar=true
+        else
+          shallowClone=0 >> $GITHUB_OUTPUT
+          sonar=false >> $GITHUB_OUTPUT
+        fi
 
-    # Shallow clone is faster, but can't be used with SonarCloud
+        if [ ${{ inputs.java-cache }} == "maven" ]; then
+          sonarCmd="mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar"
+        elif [ ${{ inputs.java-cache }} == "gradle" ]; then
+          sonarCmd="./gradlew build sonarqube --info"
+        else
+          echo "ERROR: inputs.java-cache = ${{ inputs.java-cache }}"
+          exit 1
+        fi
+
+        echo shallowClone=${shallowClone} >> $GITHUB_OUTPUT
+        echo sonarCheck=${sonarCheck} >> $GITHUB_OUTPUT
+        echo sonarCmd=${sonarCmd} >> $GITHUB_OUTPUT
+
+    # SonarCloud uses shallow clone (fetch-depth=0), which is a bit slower/heavier
     - uses: actions/checkout@v3
-      if: inputs.sonar_project_token
       with:
-        # Disable shallow clone for SonarCloud analysis
-        fetch-depth: 0
+        fetch-depth: steps.inputs.outputs.shallowClone
         repository: ${{ inputs.repository }}
 
     # Setup node and cache dir
     - uses: actions/setup-java@v3
       with:
-        cache: maven
+        cache: ${{ inputs.java-cache }}
         distribution: ${{ inputs.java-distribution }}
         java-version: ${{ inputs.java-version }}
 
@@ -70,26 +88,15 @@ runs:
 
     ### Optional SonarCloud
 
-    # Using sonar_project_token and cache=maven
-    - if: inputs.sonar_project_token && inputs.java-cache == 'maven'
+    # Using sonar_project_token
+    - if: steps.inputs.outputs.sonarCheck
       env:
         SONAR_TOKEN: ${{ inputs.sonar_project_token }}
       shell: bash
       run: |
         # Run SonarCloud for ${{ inputs.java-cache }}
         cd ${{ inputs.dir }}
-        mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-          -Dsonar.host.url=https://sonarcloud.io ${{ inputs.sonar_args }}
-
-    # Using sonar_project_token and cache=gradle
-    - if: inputs.sonar_project_token && inputs.java-cache == 'gradle'
-      env:
-        SONAR_TOKEN: ${{ inputs.sonar_project_token }}
-      shell: bash
-      run: |
-        # Run SonarCloud for ${{ inputs.java-cache }}
-        cd ${{ inputs.dir }}
-        ./gradlew build sonarqube --info \
+        ${{ steps.inputs.outputs.sonarCmd }} \
           -Dsonar.host.url=https://sonarcloud.io ${{ inputs.sonar_args }}
 
     ### Cleanup
