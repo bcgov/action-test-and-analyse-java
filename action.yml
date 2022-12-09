@@ -15,7 +15,7 @@ inputs:
 
   ### Typical / recommended
   java-cache:
-    description: Caching package manager, defaults to nothing
+    description: Caching package manager, defaults to no cache
     default: ""
   java-distribution:
     description: Java distribution, defaults to temurin
@@ -60,8 +60,8 @@ runs:
     - name: Set up JDK 17 and Caching maven dependencies
       uses: actions/setup-java@v3
       with:
-        java-cache: ${{ inputs.java-cache }}
-        java-distribution: ${{ inputs.java-distribution }}
+        cache: ${{ inputs.java-cache }}
+        distribution: ${{ inputs.java-distribution }}
         java-version: ${{ inputs.java-version }}
 
     # Run tests, hopefully generating coverage for SonarCloud
