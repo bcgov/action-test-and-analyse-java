@@ -14,17 +14,18 @@ inputs:
     required: true
 
   ### Typical / recommended
-  node_version:
-    description: Node version, defaults to 16 (LTS)
-    default: "16"
+  java-distribution:
+    description: Java distribution, defaults to temurin
+    default: temurin
+  java-version:
+    description: Java version, defaults to 17 (LTS)
+    default: "17"
   sonar_args:
     # https://docs.sonarcloud.io/advanced-setup/analysis-parameters/
     description: SonarCloud command line arguments
-    default: |
+    default: >
       -Dsonar.organization=bcgov-sonarcloud
       -Dsonar.projectKey=bcgov_${{ github.repository }}
-  sonar_comment_token:
-    description: Token for pull request comments, usually secrets.GITHUB_TOKEN
   sonar_project_token:
     description: Sonar token, provide unpopulated token for pre-setup (will skip)
 
@@ -51,51 +52,36 @@ runs:
         repository: ${{ inputs.repository }}
 
     # Setup node and cache dir
-    - uses: actions/setup-node@v3
+    - uses: actions/setup-java@v3
       with:
-        node-version: ${{ inputs.node_version }}
-    - id: npm-cache-dir
-      shell: bash
-      run: echo "dir=$(npm config get cache)" >> $GITHUB_OUTPUT
-    - uses: actions/cache@v3
-      with:
-        path: ${{ steps.npm-cache-dir.outputs.dir }}
-        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: ${{ runner.os }}-node-
+        cache: maven
+        distribution: ${{ inputs.java-distribution }}
+        java-version: ${{ inputs.java-version }}
 
     # Run tests, hopefully generating coverage for SonarCloud
-    - name: Run Tests
-      shell: bash
+    - shell: bash
       run: |
+        # Run tests
         cd ${{ inputs.dir }}
         ${{ inputs.commands }}
 
     ### Optional SonarCloud
 
     # If sonar_project_token and sonar_comment_token, then run with comments
-    - name: SonarCloud Scan
+    - name: SonarCloud Build and Analyse
       if: inputs.sonar_project_token && inputs.sonar_comment_token
-      uses: SonarSource/sonarcloud-github-action@v1.8
       env:
         GITHUB_TOKEN: ${{ inputs.sonar_comment_token }}
         SONAR_TOKEN: ${{ inputs.sonar_project_token }}
-      with:
-        projectBaseDir: ${{ inputs.dir }}
-        args: >
-          -Dsonar.pullrequest.github.summary_comment=true
+      shell: bash
+      run: |
+        # Run SonarCloud
+        cd ${{ inputs.dir }}
+        mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+          -Dsonar.host.url=https://sonarcloud.io \
           ${{ inputs.sonar_args }}
 
-    # If sonar_project_token and not sonar_comment_token, then run without comments
-    - name: SonarCloud Scan
-      if: inputs.sonar_project_token && ! inputs.sonar_comment_token
-      uses: SonarSource/sonarcloud-github-action@v1.8
-      env:
-        SONAR_TOKEN: ${{ inputs.sonar_project_token }}
-      with:
-        projectBaseDir: ${{ inputs.dir }}
-        args: >
-          -Dsonar.pullrequest.github.summary_comment=false
-          ${{ inputs.sonar_args }}
+    ### Cleanup
 
     # Fix - Docker takes ownership of files, causing a cleanup fail
     - shell: bash
