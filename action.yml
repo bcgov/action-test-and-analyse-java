@@ -14,15 +14,15 @@ inputs:
     required: true
 
   ### Typical / recommended
-  distribution:
-    description: Dunno
-    default: "temurin"
+  java-cache:
+    description: Caching package manager, defaults to nothing
+    default: ""
+  java-distribution:
+    description: Java distribution, defaults to temurin
+    default: temurin
   java-version:
     description: Java version, defaults to 17 (LTS)
     default: "17"
-  cache:
-    description: Dunno
-    default: "maven"
   sonar_args:
     # https://docs.sonarcloud.io/advanced-setup/analysis-parameters/
     description: SonarCloud command line arguments
@@ -60,16 +60,9 @@ runs:
     - name: Set up JDK 17 and Caching maven dependencies
       uses: actions/setup-java@v3
       with:
-        distribution: ${{ inputs.distribution }}
+        java-cache: ${{ inputs.java-cache }}
+        java-distribution: ${{ inputs.java-distribution }}
         java-version: ${{ inputs.java-version }}
-        cache: ${{ inputs.cache }}
-    - name: Cache local Maven repository
-      uses: actions/cache@v3
-      with:
-        path: ~/.m2/repository
-        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-        restore-keys: |
-          ${{ runner.os }}-maven-
 
     # Run tests, hopefully generating coverage for SonarCloud
     - name: Run Tests

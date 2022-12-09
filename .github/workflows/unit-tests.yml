@@ -18,22 +18,16 @@ jobs:
   tests:
     name: Unit Tests
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        dir: [backend, frontend]
-        include:
-          - dir: backend
-            token: SONAR_TOKEN_BACKEND
-          - dir: frontend
-            token: SONAR_TOKEN_FRONTEND
     steps:
       - uses: actions/checkout@v3
       - uses: ./
         with:
           commands: |
-            npm ci
-            npm run test:cov
-          dir: ${{ matrix.dir }}
+            ./mvnw test
+          dir: backend
+          java-cache: maven
+          java-distribution: temurin
+          java-version: "17"
           repository: bcgov/nr-quickstart-typescript
           sonar_args: >
             -Dsonar.exclusions=**/coverage/**,**/node_modules/**
