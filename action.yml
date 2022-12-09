@@ -14,6 +14,9 @@ inputs:
     required: true
 
   ### Typical / recommended
+  java-cache:
+    description: Java package manager cache, defaults to maven
+    default: maven
   java-distribution:
     description: Java distribution, defaults to temurin
     default: temurin
@@ -67,19 +70,27 @@ runs:
 
     ### Optional SonarCloud
 
-    # If sonar_project_token and sonar_comment_token, then run with comments
-    - name: SonarCloud Build and Analyse
-      if: inputs.sonar_project_token && inputs.sonar_comment_token
+    # Using sonar_project_token and cache=maven
+    - if: inputs.sonar_project_token && inputs.java-cache == 'maven'
       env:
-        GITHUB_TOKEN: ${{ inputs.sonar_comment_token }}
         SONAR_TOKEN: ${{ inputs.sonar_project_token }}
       shell: bash
       run: |
-        # Run SonarCloud
+        # Run SonarCloud for ${{ inputs.java-cache }}
         cd ${{ inputs.dir }}
         mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-          -Dsonar.host.url=https://sonarcloud.io \
-          ${{ inputs.sonar_args }}
+          -Dsonar.host.url=https://sonarcloud.io ${{ inputs.sonar_args }}
+
+    # Using sonar_project_token and cache=gradle
+    - if: inputs.sonar_project_token && inputs.java-cache == 'gradle'
+      env:
+        SONAR_TOKEN: ${{ inputs.sonar_project_token }}
+      shell: bash
+      run: |
+        # Run SonarCloud for ${{ inputs.java-cache }}
+        cd ${{ inputs.dir }}
+        ./gradlew build sonarqube --info \
+          -Dsonar.host.url=https://sonarcloud.io ${{ inputs.sonar_args }}
 
     ### Cleanup
 
