@@ -26,8 +26,6 @@ inputs:
     default: >
       -Dsonar.organization=bcgov-sonarcloud
       -Dsonar.projectKey=bcgov_${{ github.repository }}
-  sonar_comment_token:
-    description: Token for pull request comments, usually secrets.GITHUB_TOKEN
   sonar_project_token:
     description: Sonar token, provide unpopulated token for pre-setup (will skip)
 
@@ -81,21 +79,6 @@ runs:
         cd ${{ inputs.dir }}
         mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
           -Dsonar.host.url=https://sonarcloud.io \
-          -Dsonar.pullrequest.github.summary_comment=true \
-          ${{ inputs.sonar_args }}
-
-    # If sonar_project_token and not sonar_comment_token, then run without comments
-    - name: SonarCloud Build and Analyse
-      if: inputs.sonar_project_token && ! inputs.sonar_comment_token
-      env:
-        SONAR_TOKEN: ${{ inputs.sonar_project_token }}
-      shell: bash
-      run: |
-        # Run SonarCloud
-        cd ${{ inputs.dir }}
-        mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-          -Dsonar.host.url=https://sonarcloud.io \
-          -Dsonar.pullrequest.github.summary_comment=false \
           ${{ inputs.sonar_args }}
 
     ### Cleanup
