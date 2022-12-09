@@ -47,10 +47,10 @@ runs:
         # Process inputs
         if [ -z ${{ inputs.sonar_project_token }} ]; then
           shallowClone=1
-          sonar=true
+          sonarCheck=true
         else
           shallowClone=0 >> $GITHUB_OUTPUT
-          sonar=false >> $GITHUB_OUTPUT
+          sonarCheck=false >> $GITHUB_OUTPUT
         fi
 
         if [ ${{ inputs.java-cache }} == "maven" ]; then
