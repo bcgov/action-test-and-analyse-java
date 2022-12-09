@@ -14,9 +14,6 @@ inputs:
     required: true
 
   ### Typical / recommended
-  java-cache:
-    description: Caching package manager, defaults to no cache
-    default: ""
   java-distribution:
     description: Java distribution, defaults to temurin
     default: temurin
@@ -57,40 +54,20 @@ runs:
         repository: ${{ inputs.repository }}
 
     # Setup node and cache dir
-    - name: Set up JDK 17 and Caching maven dependencies
-      uses: actions/setup-java@v3
+    - uses: actions/setup-java@v3
       with:
-        cache: ${{ inputs.java-cache }}
+        cache: maven
         distribution: ${{ inputs.java-distribution }}
         java-version: ${{ inputs.java-version }}
 
     # Run tests, hopefully generating coverage for SonarCloud
-    - name: Run Tests
-      shell: bash
+    - shell: bash
       run: |
         # Run tests
         cd ${{ inputs.dir }}
         ${{ inputs.commands }}
 
     ### Optional SonarCloud
-
-    # Java 11 setup
-    - name: Set up JDK 11
-      uses: actions/setup-java@v1
-      with:
-        java-version: 11
-    - name: Cache Maven packages
-      uses: actions/cache@v1
-      with:
-        path: ~/.m2
-        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-        restore-keys: ${{ runner.os }}-m2
-    - name: Cache SonarCloud packages
-      uses: actions/cache@v1
-      with:
-        path: ~/.sonar/cache
-        key: ${{ runner.os }}-sonar
-        restore-keys: ${{ runner.os }}-sonar
 
     # If sonar_project_token and sonar_comment_token, then run with comments
     - name: SonarCloud Build and Analyse
@@ -103,6 +80,7 @@ runs:
         # Run SonarCloud
         cd ${{ inputs.dir }}
         mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+          -Dsonar.host.url=https://sonarcloud.io \
           -Dsonar.pullrequest.github.summary_comment=true \
           ${{ inputs.sonar_args }}
 
@@ -116,8 +94,9 @@ runs:
         # Run SonarCloud
         cd ${{ inputs.dir }}
         mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-        -Dsonar.pullrequest.github.summary_comment=false \
-        ${{ inputs.sonar_args }}
+          -Dsonar.host.url=https://sonarcloud.io \
+          -Dsonar.pullrequest.github.summary_comment=false \
+          ${{ inputs.sonar_args }}
 
     ### Cleanup
 
