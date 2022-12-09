@@ -103,7 +103,6 @@ runs:
         # Run SonarCloud
         cd ${{ inputs.dir }}
         mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-          -Dsonar.projectKey=bcgov-nr_action-test-and-analyse-java \
           -Dsonar.pullrequest.github.summary_comment=true \
           ${{ inputs.sonar_args }}
 
@@ -117,7 +116,6 @@ runs:
         # Run SonarCloud
         cd ${{ inputs.dir }}
         mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-        -Dsonar.projectKey=bcgov-nr_action-test-and-analyse-java \
         -Dsonar.pullrequest.github.summary_comment=false \
         ${{ inputs.sonar_args }}
 
