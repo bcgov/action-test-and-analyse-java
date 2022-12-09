@@ -18,14 +18,6 @@ jobs:
   tests:
     name: Unit Tests
     runs-on: ubuntu-22.04
-    strategy:
-      matrix:
-        dir: [backend, frontend]
-        include:
-          - dir: backend
-            token: SONAR_TOKEN_BACKEND
-          - dir: frontend
-            token: SONAR_TOKEN_FRONTEND
     steps:
       - uses: actions/checkout@v3
       - uses: ./
