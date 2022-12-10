@@ -9,45 +9,45 @@
 [Issues]: https://docs.github.com/en/issues/tracking-your-work-with-issues/creating-an-issue
 [Pull Requests]: https://docs.github.com/en/desktop/contributing-and-collaborating-using-github-desktop/working-with-your-remote-repository-on-github-or-github-enterprise/creating-an-issue-or-pull-request
 
-# Unit Test (nodejs), Coverage and Analysis with SonarCloud
+# Unit Test (Java), Coverage and Analysis with SonarCloud
 
 This action runs unit tests and optionally runs analysis, including coverage, using [SonarCloud](https://sonarcloud.io).  SonarCloud can be configured to comment on pull requests or stop failing workflows.
 
-Only nodejs (JavaScript, TypeScript) is currently supported, with plans for Java next.
+This Action supports Java.  Another for [JavaScript/TypeScript](https://github.com/bcgov-nr/action-test-and-analyse) is available.
+
 
 # Usage
 
 ```yaml
-- uses: bcgov-nr/action-test-and-analyse-java@main
+- uses: bcgov-nr/action-test-and-analyse-java@v.0.1.0
   with:
     ### Required
 
     # Commands to run unit tests
     # Please configure your app to generate coverage (coverage/lcov.info)
     commands: |
-      npm ci
-      npm run test:cov
+      ./mvnw test
 
     # Project/app directory
-    dir: frontend
+    dir: backend
 
     ### Typical / recommended
 
-    # Node.js version
-    # Defaults to 16 (LTS)
-    node_version: "16"
+    # Java package manager cache, defaults to maven
+    java-cache: maven
+
+    # Java distribution, defaults to temurin
+    java-distribution: temurin
+
+    # Java version, defaults to 17 (LTS)
+    java-version: "17"
 
     # Sonar arguments
     # https://docs.sonarcloud.io/advanced-setup/analysis-parameters/
     sonar_args: |
-        -Dsonar.exclusions=**/coverage/**,**/node_modules/**
+        -Dsonar.exclusions=**/coverage/**
         -Dsonar.organization=bcgov-sonarcloud
         -Dsonar.projectKey=bcgov_${{ github.repository }}
-
-    # Sonar comment token
-    # Providing this will enable SonarCloud to comment on Pull Requests
-    # $${{ secrets.GITHUB }} or a personal access token can be used
-    sonar_comment_token: ${{ secrets.GITHUB_TOKEN }}
 
     # Sonar project token
     # Available from sonarcloud.io or your organization administrator
@@ -59,18 +59,17 @@ Only nodejs (JavaScript, TypeScript) is currently supported, with plans for Java
     ### Usually a bad idea / not recommended
 
     # Repository to clone and process
-    # Useful for consuming other repos, like in testing
-    # Defaults to the current one
-    repository: ${{ github.repository }}
+    # Useful for consuming outside reposities, defaults to the current one
+    repository: <organization>/<repository>
 ```
 
 # Example, Single Directory with SonarCloud Analysis
 
-Run unit tests and provide results to SonarCloud.  This is a full workflow that runs on pull requests, merge to main and workflow_dispatch.  Use a GitHub Action secret to provide ${{ secrets.SONAR_TOKEN }}.
+Run unit tests and provide results to SonarCloud.  This is a full workflow that runs on pull requests, merge to main and workflow_dispatch.  Use a GitHub Action and Dependabot secret for ${{ secrets.SONAR_TOKEN }}.
 
 Create or modify a GitHub workflow, like below.  E.g. `./github/workflows/unit-tests.yml`
 
-Note: Provde an unpopulated SONAR_TOKEN until one is provisioned.  SonarCloud will only run once populated, allowing for pre-setup.
+Note: SonarCloud allows pre-setup.  Configure without a token to skip steps until one is provided.
 
 ```yaml
 name: Unit Tests and Analysis
@@ -94,16 +93,18 @@ jobs:
     name: Run Unit Tests and Analyse
     runs-on: ubuntu-22.04
     steps:
-      - uses: bcgov-nr/action-test-and-analyse-java@main
+      - uses: bcgov-nr/action-test-and-analyse-java@v.0.1.0
         with:
           commands: |
-            npm ci
-            npm run test:cov
+            ./mvnw test
           dir: frontend
+          java-cache: maven
+          java-distribution: temurin
+          java-version: "17"
           sonar_args: |
-            -Dsonar.exclusions=**/coverage/**,**/node_modules/**
+            -Dsonar.exclusions=**/coverage/**
             -Dsonar.organization=bcgov-nr
-            -Dsonar.projectKey=bcgov-nr_action-test-and-analyse_frontend
+            -Dsonar.projectKey=bcgov-nr_action-test-and-analyse-java
           sonar_project_token: ${{ secrets.SONAR_TOKEN }}
 ```
 
@@ -117,17 +118,19 @@ jobs:
     name: Run Unit Tests and Analyse
     runs-on: ubuntu-22.04
     steps:
-      - uses: bcgov-nr/action-test-and-analyse-java@main
+      - uses: bcgov-nr/action-test-and-analyse-java@v.0.1.0
         with:
           commands: |
-            npm ci
-            npm run test:cov
+            ./mvnw test
           dir: frontend
+          java-cache: maven
+          java-distribution: temurin
+          java-version: "17"
 ```
 
 # Example, Matrix / Multiple Directories with Sonar Cloud
 
-Unit test and analyze projects in multiple directories in parallel.  This time `repository` and `sonar_comment_token` are provided.  Please note how secrets must be passed in to composite Actions using the secrets[matrix.variable] syntax.
+Unit test and analyze projects in multiple directories in parallel using matrices.  Please note how matrices required that secrets use [matrix.variable] syntax.
 
 ```yaml
 jobs:
@@ -144,18 +147,18 @@ jobs:
             token: SONAR_TOKEN_FRONTEND
     steps:
       - uses: actions/checkout@v3
-      - uses: bcgov-nr/action-test-and-analyse-java@main
+      - uses: bcgov-nr/action-test-and-analyse-java@v.0.1.0
         with:
           commands: |
-            npm ci
-            npm run test:cov
+            ./mvnw test
           dir: ${{ matrix.dir }}
-          repository: bcgov/nr-quickstart-typescript
+          java-cache: maven
+          java-distribution: temurin
+          java-version: "17"
           sonar_args: |
-            -Dsonar.exclusions=**/coverage/**,**/node_modules/**
+            -Dsonar.exclusions=**/coverage/**
             -Dsonar.organization=bcgov-nr
-            -Dsonar.projectKey=bcgov-nr_action-test-and-analyse_${{ matrix.dir }}
-          sonar_comment_token: ${{ secrets.GITHUB_TOKEN }}
+            -Dsonar.projectKey=bcgov-nr_action-test-and-analyse-java_${{ matrix.dir }}
           sonar_project_token: ${{ secrets[matrix.token] }}
 ```
 
@@ -167,7 +170,7 @@ For BC Government projects, please create an [issue for our platform team](https
 
 After sign up, a token should be available from your project on the [SonarCloud] site.  Multirepo projects (e.g. backend, frontend) will have multiple projects.  Click `Administration > Analysis Method > GitHub Actions (tutorial)` to find yours.
 
-E.g. https://sonarcloud.io/project/configuration?id={<PROJECT>}&analysisMode=GitHubActions
+E.g. https://sonarcloud.io/project/configuration?id={\<PROJECT\>}&analysisMode=GitHubActions
 
 # Feedback
 
