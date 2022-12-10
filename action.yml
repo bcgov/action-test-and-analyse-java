@@ -1,5 +1,5 @@
-name: Unit Test and Analysis with SonarCloud
-description: Run unit tests (current node only), can send to SonarCloud
+name: Java Unit Test and Analysis with SonarCloud
+description: Run Java unit tests, can analyse with SonarCloud
 branding:
   icon: check-square
   color: blue
