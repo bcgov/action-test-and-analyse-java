@@ -23,7 +23,7 @@ jobs:
       - uses: ./
         with:
           commands: |
-            ./mvnw test
+            mvn test
           dir: backend
           java-distribution: temurin
           java-version: "17"
