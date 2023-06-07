@@ -29,6 +29,8 @@ jobs:
           java-version: "17"
           repository: bcgov/nr-forest-client
           sonar_args: >
-            -Dsonar.organization=bcgov-sonarcloud
-            -Dsonar.projectKey=forest-client-backend
+            -Dsonar.exclusions=**/coverage/**
+            -Dsonar.organization=bcgov-nr
+            -Dsonar.projectKey=bcgov-nr_action-test-and-analyse-java
+            -Dsonar.branch.name=${{ github.ref_name }}
           sonar_project_token: ${{ secrets.SONAR_TOKEN }}
