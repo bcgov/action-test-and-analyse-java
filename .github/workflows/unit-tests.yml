@@ -23,7 +23,7 @@ jobs:
       - uses: ./
         with:
           commands: |
-            mvn test
+            mvn -B verify -P all-tests checkstyle:checkstyle -Dcheckstyle.skip=false --file pom.xml
           dir: backend
           java-distribution: temurin
           java-version: "17"
