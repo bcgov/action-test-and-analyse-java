@@ -9,9 +9,9 @@
 [Issues]: https://docs.github.com/en/issues/tracking-your-work-with-issues/creating-an-issue
 [Pull Requests]: https://docs.github.com/en/desktop/contributing-and-collaborating-using-github-desktop/working-with-your-remote-repository-on-github-or-github-enterprise/creating-an-issue-or-pull-request
 
-# Unit Test (Java), Coverage and Analysis with SonarCloud
+# Test (Java), Coverage and Analysis with SonarCloud
 
-This action runs unit tests and optionally runs analysis, including coverage, using [SonarCloud](https://sonarcloud.io).  SonarCloud can be configured to comment on pull requests or stop failing workflows.
+This action runs tests and optionally runs analysis, including coverage, using [SonarCloud](https://sonarcloud.io).  SonarCloud can be configured to comment on pull requests or stop failing workflows. Also this action automatically configures the github package server in a settings file to import dependencies from it during execution.
 
 This Action supports Java.  Another for [JavaScript/TypeScript](https://github.com/bcgov-nr/action-test-and-analyse) is available.
 

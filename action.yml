@@ -86,7 +86,7 @@ runs:
       run: |
         # Run tests
         cd ${{ inputs.dir }}
-        ${{ inputs.commands }}
+        ${{ inputs.commands }} -s $GITHUB_WORKSPACE/settings.xml
 
     ### Optional SonarCloud
 
@@ -99,7 +99,8 @@ runs:
         # Run SonarCloud for ${{ inputs.java-cache }}
         cd ${{ inputs.dir }}
         ${{ steps.inputs.outputs.sonarCmd }} \
-          -Dsonar.host.url=https://sonarcloud.io ${{ inputs.sonar_args }}
+          -Dsonar.host.url=https://sonarcloud.io ${{ inputs.sonar_args }} \
+          -s $GITHUB_WORKSPACE/settings.xml
 
     ### Cleanup
 
