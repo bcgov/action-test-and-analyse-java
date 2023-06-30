@@ -98,9 +98,8 @@ runs:
       run: |
         # Run SonarCloud for ${{ inputs.java-cache }}
         cd ${{ inputs.dir }}
-        ${{ steps.inputs.outputs.sonarCmd }} \
-          -Dsonar.host.url=https://sonarcloud.io ${{ inputs.sonar_args }} \
-          -s $GITHUB_WORKSPACE/settings.xml
+        ${{ steps.inputs.outputs.sonarCmd }} -s $GITHUB_WORKSPACE/settings.xml \
+          -Dsonar.host.url=https://sonarcloud.io ${{ inputs.sonar_args }}
 
     ### Cleanup
 
