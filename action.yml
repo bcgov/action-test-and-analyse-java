@@ -85,7 +85,6 @@ runs:
       run: |
         # Run tests
         cd ${{ inputs.dir }}
-        cat /home/runner/.m2/settings.xml                
         ${{ inputs.commands }}
 
     ### Optional SonarCloud
