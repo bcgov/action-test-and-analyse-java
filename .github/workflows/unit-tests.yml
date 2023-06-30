@@ -32,5 +32,5 @@ jobs:
             -Dsonar.exclusions=**/coverage/**
             -Dsonar.organization=bcgov-nr
             -Dsonar.projectKey=bcgov-nr_action-test-and-analyse-java
-            -Dsonar.branch.name=${{ github.ref_name }}
+            -Dsonar.branch.name=main
           sonar_project_token: ${{ secrets.SONAR_TOKEN }}
