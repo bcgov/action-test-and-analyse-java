@@ -54,7 +54,7 @@ runs:
         fi
 
         if [ ${{ inputs.java-cache }} == "maven" ]; then
-          sonarCmd="mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar"
+          sonarCmd="mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -s $GITHUB_WORKSPACE/settings.xml"
         elif [ ${{ inputs.java-cache }} == "gradle" ]; then
           sonarCmd="./gradlew build sonarqube --info"
         else
@@ -88,8 +88,7 @@ runs:
         cd ${{ inputs.dir }}
         mkdir -p /home/runner/.m2/
         cp $GITHUB_WORKSPACE/settings.xml /home/runner/.m2/
-        mvn -X clean | grep "settings"
-        cat /home/runner/.m2/settings.xml
+        ${{ inputs.commands }}
 
     ### Optional SonarCloud
 
@@ -101,7 +100,8 @@ runs:
       run: |
         # Run SonarCloud for ${{ inputs.java-cache }}
         cd ${{ inputs.dir }}
-        M2_HOME=$GITHUB_WORKSPACE mvn -X clean | grep "settings"
+        ${{ steps.inputs.outputs.sonarCmd }} \
+          -Dsonar.host.url=https://sonarcloud.io ${{ inputs.sonar_args }}
 
     ### Cleanup
 
