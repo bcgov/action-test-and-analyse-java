@@ -86,6 +86,8 @@ runs:
       run: |
         # Run tests
         cd ${{ inputs.dir }}
+        mkdir -p /home/runner/.m2/
+        cp $GITHUB_WORKSPACE/settings.xml /home/runner/.m2/
         mvn -X clean | grep "settings"
         cat /home/runner/.m2/settings.xml
 
