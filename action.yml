@@ -54,7 +54,7 @@ runs:
         fi
 
         if [ ${{ inputs.java-cache }} == "maven" ]; then
-          sonarCmd="mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -s $GITHUB_WORKSPACE/settings.xml"
+          sonarCmd="mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar"
         elif [ ${{ inputs.java-cache }} == "gradle" ]; then
           sonarCmd="./gradlew build sonarqube --info"
         else
@@ -79,15 +79,13 @@ runs:
         distribution: ${{ inputs.java-distribution }}
         java-version: ${{ inputs.java-version }}
         server-id: 'github'
-        settings-path: ${{ github.workspace }}
 
     # Run tests, hopefully generating coverage for SonarCloud
     - shell: bash
       run: |
         # Run tests
         cd ${{ inputs.dir }}
-        mkdir -p /home/runner/.m2/
-        cp $GITHUB_WORKSPACE/settings.xml /home/runner/.m2/
+        cat /home/runner/.m2/settings.xml                
         ${{ inputs.commands }}
 
     ### Optional SonarCloud
