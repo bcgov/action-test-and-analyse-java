@@ -87,6 +87,7 @@ runs:
         # Run tests
         cd ${{ inputs.dir }}
         mvn -X clean | grep "settings"
+        cat /home/runner/.m2/settings.xml
 
     ### Optional SonarCloud
 
