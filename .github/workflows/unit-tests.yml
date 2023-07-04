@@ -28,3 +28,9 @@ jobs:
           java-distribution: temurin
           java-version: "17"
           repository: bcgov/nr-forest-client          
+          sonar_args: >
+            -Dsonar.exclusions=**/coverage/**
+            -Dsonar.organization=bcgov-nr
+            -Dsonar.projectKey=bcgov-nr_action-test-and-analyse-java
+          sonar_project_token: ${{ secrets.SONAR_TOKEN }}
+
