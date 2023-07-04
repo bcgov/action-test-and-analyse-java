@@ -23,13 +23,14 @@ jobs:
       - uses: ./
         with:
           commands: |
-            ./mvnw test
+            mvn -B verify -P all-tests checkstyle:checkstyle -Dcheckstyle.skip=false --file pom.xml
           dir: backend
           java-distribution: temurin
           java-version: "17"
-          repository: bcgov/nr-forest-client
+          repository: bcgov/nr-forest-client          
           sonar_args: >
             -Dsonar.exclusions=**/coverage/**
             -Dsonar.organization=bcgov-nr
-            -Dsonar.projectKey=bcgov-nr_action-test-and-analyse-java
+            -Dsonar.projectKey=action-test-and-analyse-java
           sonar_project_token: ${{ secrets.SONAR_TOKEN }}
+

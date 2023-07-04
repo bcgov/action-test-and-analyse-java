@@ -78,6 +78,7 @@ runs:
         cache: ${{ inputs.java-cache }}
         distribution: ${{ inputs.java-distribution }}
         java-version: ${{ inputs.java-version }}
+        server-id: 'github'
 
     # Run tests, hopefully generating coverage for SonarCloud
     - shell: bash
