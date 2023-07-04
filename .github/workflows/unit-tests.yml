@@ -31,6 +31,6 @@ jobs:
           sonar_args: >
             -Dsonar.exclusions=**/coverage/**
             -Dsonar.organization=bcgov-nr
-            -Dsonar.projectKey=bcgov-nr_action-test-and-analyse-java
+            -Dsonar.projectKey=action-test-and-analyse-java
           sonar_project_token: ${{ secrets.SONAR_TOKEN }}
 
