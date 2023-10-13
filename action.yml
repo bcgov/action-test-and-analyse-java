@@ -78,20 +78,20 @@ runs:
           exit 1
         fi
 
-        if [ ${{ inputs.java-cache }} == "maven" ]; then
-          "sonarCmd=mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar" >> $GITHUB_OUTPUT
-        elif [ ${{ inputs.java-cache }} == "gradle" ]; then
-          "sonarCmd=./gradlew build sonarqube --info" >> $GITHUB_OUTPUT
-        else
-          echo "ERROR: inputs.java-cache = ${{ inputs.java-cache }}"
-          exit 1
-        fi
-
     # Process variables and inputs
     - id: vars
       shell: bash
       run: |
         # Triggers and conditions
+
+        if [ "${{ inputs.java-cache }}" == "maven" ]; then
+          "sonarCmd=mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar" >> $GITHUB_OUTPUT
+        elif [ "${{ inputs.java-cache }}" == "gradle" ]; then
+          "sonarCmd=./gradlew build sonarqube --info" >> $GITHUB_OUTPUT
+        else
+          echo "ERROR: inputs.java-cache = ${{ inputs.java-cache }}"
+          exit 1
+        fi
 
         # Arrays must be stored first
         TRIGGERS=${{ inputs.triggers }}
@@ -148,14 +148,14 @@ runs:
     ### Optional SonarCloud
 
     # If sonar_token
-    - if: steps.inputs.outputs.sonarCheck
+    - if: steps.var.outputs.sonarCheck
       env:
         SONAR_TOKEN: ${{ inputs.sonar_token }}
       shell: bash
       run: |
         # Run SonarCloud for ${{ inputs.java-cache }}
         cd ${{ inputs.dir }}
-        ${{ steps.inputs.outputs.sonarCmd }} \
+        ${{ steps.var.outputs.sonarCmd }} \
           -Dsonar.host.url=https://sonarcloud.io ${{ inputs.sonar_args }}
 
     ### Cleanup
