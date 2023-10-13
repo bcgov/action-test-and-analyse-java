@@ -14,6 +14,10 @@ inputs:
     description: App/package directory
     required: true
 
+  java-version:
+    description: Java version, defaults to 17 (LTS)
+    required: true
+
   ### Typical / recommended
   java-cache:
     description: Java package manager cache, defaults to maven
@@ -22,10 +26,6 @@ inputs:
   java-distribution:
     description: Java distribution, defaults to temurin
     default: temurin
-
-  java-version:
-    description: Java version, defaults to 17 (LTS)
-    default: "17"
 
   sonar_args:
     # https://docs.sonarcloud.io/advanced-setup/analysis-parameters/

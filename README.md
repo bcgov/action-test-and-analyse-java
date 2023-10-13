@@ -1,3 +1,7 @@
+**BREAKING CHANGES in v2.0:**
+* **java_version is now required (previously defaulted to 17)**
+* **sonar_project_token has been renamed sonar_token**
+
 <!-- Badges -->
 [![Issues](https://img.shields.io/github/issues/bcgov-nr/action-test-and-analyse-java)](/../../issues)
 [![Pull Requests](https://img.shields.io/github/issues-pr/bcgov-nr/action-test-and-analyse-java)](/../../pulls)
