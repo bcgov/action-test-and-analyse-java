@@ -85,9 +85,9 @@ runs:
         # Triggers and conditions
 
         if [ "${{ inputs.java-cache }}" == "maven" ]; then
-          "sonarCmd=mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar" >> $GITHUB_OUTPUT
+          sonarCmd="mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar" >> $GITHUB_OUTPUT
         elif [ "${{ inputs.java-cache }}" == "gradle" ]; then
-          "sonarCmd=./gradlew build sonarqube --info" >> $GITHUB_OUTPUT
+          sonarCmd=""./gradlew build sonarqube --info" >> $GITHUB_OUTPUT
         else
           echo "ERROR: inputs.java-cache = ${{ inputs.java-cache }}"
           exit 1
