@@ -1,5 +1,5 @@
-name: Test and Analyze with Triggers and SonarCloud
-description: Run node tests based on triggers, optional SonarCloud
+name: Java Unit Test and Analysis with SonarCloud
+description: Run Java unit tests, can analyse with SonarCloud
 branding:
   icon: check-square
   color: blue
