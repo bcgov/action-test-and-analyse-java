@@ -13,27 +13,31 @@
 [Issues]: https://docs.github.com/en/issues/tracking-your-work-with-issues/creating-an-issue
 [Pull Requests]: https://docs.github.com/en/desktop/contributing-and-collaborating-using-github-desktop/working-with-your-remote-repository-on-github-or-github-enterprise/creating-an-issue-or-pull-request
 
-# Test (Java), Coverage and Analysis with SonarCloud
+# Test and Analyze with Triggers and SonarCloud
 
-This action runs tests and optionally runs analysis, including coverage, using [SonarCloud](https://sonarcloud.io).  SonarCloud can be configured to comment on pull requests or stop failing workflows. Also this action automatically configures the github package server in a settings file to import dependencies from it during execution.
+This action runs tests, dependent on triggers, optionally sending results and coverage to [SonarCloud](https://sonarcloud.io).  Test and SonarCloud can be configured to comment on pull requests or stop failing workflows.
 
-This Action supports Java.  Another for [JavaScript/TypeScript](https://github.com/bcgov-nr/action-test-and-analyse) is available.
+Conditional triggers are used to determine whether tests need to be run.  If triggers are matched, then the appropriate code has changed and should be tested.  Tests always run if no triggers are provided.  Untriggered runs do little other than report a success.
 
+Only Java is supported by this action.  Please see our [JavaScript action](https://github.com/bcgov-nr/action-test-and-analyse) or upcoming Python action as required.
 
 # Usage
 
 ```yaml
-- uses: bcgov-nr/action-test-and-analyse-java@v.0.1.0
+- uses: bcgov-nr/action-test-and-analyse-java@main
   with:
     ### Required
 
     # Commands to run unit tests
     # Please configure your app to generate coverage (coverage/lcov.info)
     commands: |
-      ./mvnw test
+      mvn -B verify -P all-tests checkstyle:checkstyle -Dcheckstyle.skip=false
 
     # Project/app directory
     dir: backend
+
+    # Java version, previously defaulted to 17 (LTS)
+    java-version: "17"
 
     ### Typical / recommended
 
@@ -42,9 +46,6 @@ This Action supports Java.  Another for [JavaScript/TypeScript](https://github.c
 
     # Java distribution, defaults to temurin
     java-distribution: temurin
-
-    # Java version, defaults to 17 (LTS)
-    java-version: "17"
 
     # Sonar arguments
     # https://docs.sonarcloud.io/advanced-setup/analysis-parameters/
@@ -57,35 +58,52 @@ This Action supports Java.  Another for [JavaScript/TypeScript](https://github.c
     # Available from sonarcloud.io or your organization administrator
     # BCGov i.e. https://github.com/BCDevOps/devops-requests/issues/new/choose
     # Provide an unpopulated token for pre-setup, section will be skipped
-    sonar_project_token:
+    sonar_token:
       description: ${{ secrets.SONAR_TOKEN }}
+
+    # Bash array to diff for build triggering
+    # Optional, defaults to nothing, which forces a build
+    triggers: ('frontend/')
 
     ### Usually a bad idea / not recommended
 
+    # Overrides the default branch to diff against
+    # Defaults to the default branch, usually `main`
+    diff_branch: ${{ github.event.repository.default_branch }}
+
     # Repository to clone and process
-    # Useful for consuming outside reposities, defaults to the current one
-    repository: <organization>/<repository>
+    # Useful for consuming other repos, like in testing
+    # Defaults to the current one
+    repository: ${{ github.repository }}
+
+    # Branch to clone and process
+    # Useful for consuming non-default branches, like in testing
+    # Defants to empty, cloning the default branch
+    branch: ""
+
+    # Bash array of events for limiting triggers, otherwise trigger automatically
+    # E.g. ("pull_request" "push" "workflow_dispatch")
+    # Defaults to only using triggers with pull requests
+    triggers_event: "('pull_request')"
 ```
 
 # Example, Single Directory with SonarCloud Analysis
 
-Run unit tests and provide results to SonarCloud.  This is a full workflow that runs on pull requests, merge to main and workflow_dispatch.  Use a GitHub Action and Dependabot secret for ${{ secrets.SONAR_TOKEN }}.
+Run tests and provide results to SonarCloud.  This is a full workflow that runs on pull requests, merge to main and workflow_dispatch.  Use a GitHub Action secret to provide ${{ secrets.SONAR_TOKEN }}.
 
-Create or modify a GitHub workflow, like below.  E.g. `./github/workflows/unit-tests.yml`
+The specified triggers will be used to decide whether this job runs tests and analysis or just exists successfully.
 
-Note: SonarCloud allows pre-setup.  Configure without a token to skip steps until one is provided.
+Create or modify a GitHub workflow, like below.  E.g. `./github/workflows/tests.yml`
+
+Note: Provde an unpopulated SONAR_TOKEN until one is provisioned.  SonarCloud will only run once populated, allowing for pre-setup.
 
 ```yaml
-name: Unit Tests and Analysis
+name: Analysis
 
 on:
   pull_request:
   push:
-    branches:
-      - main
-    paths-ignore:
-      - ".github/**"
-      - "**.md"
+    branches: [main]
   workflow_dispatch:
 
 concurrency:
@@ -94,10 +112,10 @@ concurrency:
 
 jobs:
   tests:
-    name: Run Unit Tests and Analyse
+    name: Unit Tests
     runs-on: ubuntu-22.04
     steps:
-      - uses: bcgov-nr/action-test-and-analyse-java@v.0.1.0
+      - uses: bcgov-nr/action-test-and-analyse-java@main
         with:
           commands: |
             ./mvnw test
@@ -109,20 +127,21 @@ jobs:
             -Dsonar.exclusions=**/coverage/**
             -Dsonar.organization=bcgov-nr
             -Dsonar.projectKey=bcgov-nr_action-test-and-analyse-java
-          sonar_project_token: ${{ secrets.SONAR_TOKEN }}
+          sonar_token: ${{ secrets.SONAR_TOKEN }}
+          triggers: ('frontend/' 'charts/frontend')
 ```
 
-# Example, Single Directory, Only Running Unit Tests (No SonarCloud)
+# Example, Only Running Tests (No SonarCloud), No Triggers
 
-Run unit tests, but not SonarCloud.
+No triggers are provided so tests will always run.  SonarCloud is skipped.
 
 ```yaml
 jobs:
   tests:
-    name: Run Unit Tests and Analyse
+    name: Unit Tests
     runs-on: ubuntu-22.04
     steps:
-      - uses: bcgov-nr/action-test-and-analyse-java@v.0.1.0
+      - uses: bcgov-nr/action-test-and-analyse-java@main
         with:
           commands: |
             ./mvnw test
@@ -132,9 +151,9 @@ jobs:
           java-version: "17"
 ```
 
-# Example, Matrix / Multiple Directories with Sonar Cloud
+# Example, Matrix / Multiple Directories with Sonar Cloud and Triggers
 
-Unit test and analyze projects in multiple directories in parallel using matrices.  Please note how matrices required that secrets use [matrix.variable] syntax.
+Test projects in multiple directories in parallel.  This time `repository` and `branch` are provided.  Please note how secrets must be passed in to composite Actions using the secrets[matrix.variable] syntax.
 
 ```yaml
 jobs:
@@ -147,11 +166,13 @@ jobs:
         include:
           - dir: backend
             token: SONAR_TOKEN_BACKEND
+            triggers: ('frontend/' 'charts/frontend')
           - dir: frontend
             token: SONAR_TOKEN_FRONTEND
+            triggers: ('backend/' 'charts/backend')
     steps:
-      - uses: actions/checkout@v3
-      - uses: bcgov-nr/action-test-and-analyse-java@v.0.1.0
+      - uses: actions/checkout@v4
+      - uses: bcgov-nr/action-test-and-analyse-java@main
         with:
           commands: |
             ./mvnw test
@@ -163,7 +184,10 @@ jobs:
             -Dsonar.exclusions=**/coverage/**
             -Dsonar.organization=bcgov-nr
             -Dsonar.projectKey=bcgov-nr_action-test-and-analyse-java_${{ matrix.dir }}
-          sonar_project_token: ${{ secrets[matrix.token] }}
+          sonar_token: ${{ secrets[matrix.token] }}
+          triggers: ${{ matrix.triggers }}
+          repository: bcgov/quickstart-openshift
+          branch: main
 ```
 
 # Sonar Project Token
@@ -174,7 +198,11 @@ For BC Government projects, please create an [issue for our platform team](https
 
 After sign up, a token should be available from your project on the [SonarCloud] site.  Multirepo projects (e.g. backend, frontend) will have multiple projects.  Click `Administration > Analysis Method > GitHub Actions (tutorial)` to find yours.
 
-E.g. https://sonarcloud.io/project/configuration?id={\<PROJECT\>}&analysisMode=GitHubActions
+E.g. https://sonarcloud.io/project/configuration?id={<PROJECT>}&analysisMode=GitHubActions
+
+# Triggers and Triggers_Event
+
+Triggers are used to limit test running to only appropriate files are changed.  This is generally not desirable outside of pull requests, so `triggers_event` defaults to `("pull_request")`.  Override this behaviour by specifying a bash array using any of the many, many [event types GitHub provides](https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#push), e.g. `("branch_protection_rule" "workflow_dispatch" "push")`.
 
 # Feedback
 
