@@ -149,7 +149,7 @@ runs:
 
     # If sonar_token
     - if: steps.vars.outputs.sonarCheck
-    - env:
+      env:
         SONAR_TOKEN: ${{ inputs.sonar_token }}
       shell: bash
       run: |
