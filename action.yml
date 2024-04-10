@@ -84,17 +84,14 @@ runs:
       run: |
         # Triggers and conditions
 
-        sonar_cmd="mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar"
-        sonar_cmd="mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar" >> $GITHUB_OUTPUT
-
-        # if [ "${{ inputs.java-cache }}" == "maven" ]; then
-        #   sonar_cmd="mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar" >> $GITHUB_OUTPUT
-        # elif [ "${{ inputs.java-cache }}" == "gradle" ]; then
-        #   sonar_cmd="./gradlew build sonarqube --info" >> $GITHUB_OUTPUT
-        # else
-        #   echo "ERROR: inputs.java-cache = ${{ inputs.java-cache }}"
-        #   exit 1
-        # fi
+        if [ "${{ inputs.java-cache }}" == "maven" ]; then
+          echo sonar_cmd="mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar" >> $GITHUB_OUTPUT
+        elif [ "${{ inputs.java-cache }}" == "gradle" ]; then
+          echo sonar_cmd="./gradlew build sonarqube --info" >> $GITHUB_OUTPUT
+        else
+          echo "ERROR: inputs.java-cache = ${{ inputs.java-cache }}"
+          exit 1
+        fi
 
         # Arrays must be stored first
         TRIGGERS=${{ inputs.triggers }}
