@@ -148,8 +148,8 @@ runs:
     ### Optional SonarCloud
 
     # If sonar_token
-    - if: steps.var.outputs.sonarCheck
-      env:
+    # - if: steps.var.outputs.sonarCheck
+    - env:
         SONAR_TOKEN: ${{ inputs.sonar_token }}
       shell: bash
       run: |
