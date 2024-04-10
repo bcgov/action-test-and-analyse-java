@@ -97,9 +97,9 @@ runs:
     - name: Run Tests
       if: steps.diff.outputs.triggered == 'true'
       shell: bash
+      working-directory: ${{ inputs.dir }}
       run: |
         # Run tests
-        cd ${{ inputs.dir }}
         ${{ inputs.commands }}
 
     ### Optional SonarCloud
@@ -108,20 +108,21 @@ runs:
       env:
         SONAR_TOKEN: ${{ inputs.sonar_token }}
       shell: bash
+      working-directory: ${{ inputs.dir }}
       run: |
         # Run SonarCloud for ${{ inputs.java-cache }}
 
-        if [ "${{ inputs.java-cache }}" == "maven" ]; then
-          SONAR_CMD="mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar"
-        elif [ "${{ inputs.java-cache }}" == "gradle" ]; then
-          SONAR_CMD="./gradlew build sonarqube --info"
-        else
-          echo "ERROR: inputs.java-cache = ${{ inputs.java-cache }}"
-          exit 1
-        fi
+        # if [ "${{ inputs.java-cache }}" == "maven" ]; then
+        #   SONAR_CMD="mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar"
+        # elif [ "${{ inputs.java-cache }}" == "gradle" ]; then
+        #   SONAR_CMD="./gradlew build sonarqube --info"
+        # else
+        #   echo "ERROR: inputs.java-cache = ${{ inputs.java-cache }}"
+        #   exit 1
+        # fi
 
-        cd ${{ inputs.dir }}
-        "${SONAR_CMD}" -Dsonar.host.url=https://sonarcloud.io ${{ inputs.sonar_args }}
+        # "${SONAR_CMD}" -Dsonar.host.url=https://sonarcloud.io ${{ inputs.sonar_args }}
+        mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.host.url=https://sonarcloud.io ${{ inputs.sonar_args }}
 
     # ### Cleanup
 
