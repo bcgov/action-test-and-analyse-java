@@ -84,8 +84,11 @@ runs:
       run: |
         # Triggers and conditions
 
+        sonar_cmd="mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar"
+        sonar_cmd="mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar" >> $GITHUB_OUTPUT
+
         # if [ "${{ inputs.java-cache }}" == "maven" ]; then
-          sonar_cmd="mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar" >> $GITHUB_OUTPUT
+        #   sonar_cmd="mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar" >> $GITHUB_OUTPUT
         # elif [ "${{ inputs.java-cache }}" == "gradle" ]; then
         #   sonar_cmd="./gradlew build sonarqube --info" >> $GITHUB_OUTPUT
         # else
@@ -129,13 +132,13 @@ runs:
         echo "Triggers not matched, testing skipped"
         echo "triggered=false" >> $GITHUB_OUTPUT
 
-    # Setup Java and cache dir
-    - uses: actions/setup-java@v4
-      with:
-        cache: ${{ inputs.java-cache }}
-        distribution: ${{ inputs.java-distribution }}
-        java-version: ${{ inputs.java-version }}
-        server-id: 'github'
+    # # Setup Java and cache dir
+    # - uses: actions/setup-java@v4
+    #   with:
+    #     cache: ${{ inputs.java-cache }}
+    #     distribution: ${{ inputs.java-distribution }}
+    #     java-version: ${{ inputs.java-version }}
+    #     server-id: 'github'
 
     # # Run tests, hopefully generating coverage for SonarCloud
     # - name: Run Tests
@@ -154,6 +157,12 @@ runs:
       shell: bash
       run: |
         # Run SonarCloud for ${{ inputs.java-cache }}
+
+        echo "steps.vars.outputs.triggered=${{ steps.vars.outputs.triggered }}"
+        echo "steps.vars.outputs.sonar_cmd=${{ steps.vars.outputs.sonar_cmd }}"
+        echo "json: ${{ toJson(steps.vars.outputs) }}"
+
+        # This is where things like to go wrong
         cd ${{ inputs.dir }}
         ${{ steps.vars.outputs.sonar_cmd }} \
           -Dsonar.host.url=https://sonarcloud.io ${{ inputs.sonar_args }}
