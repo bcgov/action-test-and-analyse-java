@@ -147,7 +147,7 @@ runs:
 
     ### Optional SonarCloud
 
-      if: inputs.sonar_token && steps.vars.outputs.triggered == 'true'
+    - if: inputs.sonar_token && steps.vars.outputs.triggered == 'true'
       env:
         SONAR_TOKEN: ${{ inputs.sonar_token }}
       shell: bash
