@@ -148,14 +148,14 @@ runs:
     ### Optional SonarCloud
 
     # If sonar_token
-    # - if: steps.var.outputs.sonarCheck
+    - if: steps.vars.outputs.sonarCheck
     - env:
         SONAR_TOKEN: ${{ inputs.sonar_token }}
       shell: bash
       run: |
         # Run SonarCloud for ${{ inputs.java-cache }}
         cd ${{ inputs.dir }}
-        ${{ steps.var.outputs.sonarCmd }} \
+        ${{ steps.vars.outputs.sonarCmd }} \
           -Dsonar.host.url=https://sonarcloud.io ${{ inputs.sonar_args }}
 
     ### Cleanup
