@@ -60,12 +60,6 @@ inputs:
 runs:
   using: composite
   steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        repository: ${{ inputs.repository }}
-        ref: ${{ inputs.branch }}
-
     - name: Warnings for breaking changes
       shell: bash
       run: |
@@ -84,6 +78,12 @@ runs:
       with:
         triggers: ${{ inputs.triggers }}
         diff_branch: ${{ inputs.diff_branch }}
+
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        repository: ${{ inputs.repository }}
+        ref: ${{ inputs.branch }}
 
     # Setup Java and cache dir
     - uses: actions/setup-java@v4
