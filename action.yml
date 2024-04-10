@@ -78,56 +78,12 @@ runs:
           exit 1
         fi
 
-    # Process variables and inputs
-    - id: vars
-      shell: bash
-      run: |
-        # Triggers and conditions
-
-        if [ "${{ inputs.java-cache }}" == "maven" ]; then
-          echo sonarCmd="mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar" >> $GITHUB_OUTPUT
-        elif [ "${{ inputs.java-cache }}" == "gradle" ]; then
-          echo sonarCmd="./gradlew build sonarqube --info" >> $GITHUB_OUTPUT
-        else
-          echo "ERROR: inputs.java-cache = ${{ inputs.java-cache }}"
-          exit 1
-        fi
-
-        # Arrays must be stored first
-        TRIGGERS=${{ inputs.triggers }}
-        T_EVENTS=${{ inputs.triggers_event }}
-
-        # Default to triggered=true
-        echo "triggered=true" >> $GITHUB_OUTPUT
-
-        # Run/trigger conditions
-        if [[ ! "${T_EVENTS}" =~ "${{ github.event_name }}" ]]
-        then
-          # Event doesn't match on type, so fire
-          echo "Event not matched, so always test"
-          exit 0
-        elif [ -z "${TRIGGERS}" ]
-        then
-          # Triggers omitted, so fire
-          echo "Triggers omitted, so always test"
-          exit 0
-        else
-          # Check triggers against a git diff
-          echo "Processing triggers"
-          git fetch origin "${{ inputs.diff_branch }}"
-          while read -r check; do
-            for t in "${TRIGGERS[@]}"; do
-              if [[ "${check}" =~ "${t}" ]]; then
-                  echo -e "Triggered: ${t}\n --> ${check}"
-                  exit 0
-              fi
-            done
-          done < <(git diff origin/"${{ inputs.diff_branch }}" --name-only)
-        fi
-
-        # Conditions not met, do not fire
-        echo "Triggers not matched, testing skipped"
-        echo "triggered=false" >> $GITHUB_OUTPUT
+    # Send triggers to diff action
+    - id: diff
+      uses: bcgov-nr/action-diff-triggers@v0.2.0
+      with:
+        triggers: ${{ inputs.triggers }}
+        diff_branch: ${{ inputs.diff_branch }}
 
     # Setup Java and cache dir
     - uses: actions/setup-java@v4
@@ -139,7 +95,7 @@ runs:
 
     # Run tests, hopefully generating coverage for SonarCloud
     - name: Run Tests
-      if: steps.vars.outputs.triggered == 'true'
+      if: steps.diff.outputs.triggered == 'true'
       shell: bash
       run: |
         # Run tests
@@ -148,27 +104,36 @@ runs:
 
     ### Optional SonarCloud
 
-    - if: inputs.sonar_token && steps.vars.outputs.triggered == 'true'
+    - if: inputs.sonar_token && steps.diff.outputs.triggered == 'true'
       env:
         SONAR_TOKEN: ${{ inputs.sonar_token }}
       shell: bash
       run: |
         # Run SonarCloud for ${{ inputs.java-cache }}
+
+        if [ "${{ inputs.java-cache }}" == "maven" ]; then
+          SONAR_CMD="mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar"
+        elif [ "${{ inputs.java-cache }}" == "gradle" ]; then
+          SONAR_CMD="./gradlew build sonarqube --info"
+        else
+          echo "ERROR: inputs.java-cache = ${{ inputs.java-cache }}"
+          exit 1
+        fi
+
         cd ${{ inputs.dir }}
-        ${{ steps.vars.outputs.sonarCmd }} \
-          -Dsonar.host.url=https://sonarcloud.io ${{ inputs.sonar_args }}
+        "${SONAR_CMD}" -Dsonar.host.url=https://sonarcloud.io ${{ inputs.sonar_args }}
 
     ### Cleanup
 
     # Fix - Docker can take file ownership, causing a cleanup fail
     - shell: bash
-      if: steps.vars.outputs.triggered == 'true'
+      if: steps.diff.outputs.triggered == 'true'
       id: get_uid
       run: |
         # User for workstation ownership reset/fix
         echo "uid=$(id -u ${USER})" >> $GITHUB_OUTPUT
     - uses: peter-murray/reset-workspace-ownership-action@v1
-      if: steps.vars.outputs.triggered == 'true'
+      if: steps.diff.outputs.triggered == 'true'
       with:
         user_id: ${{ steps.get_uid.outputs.uid }}
 
