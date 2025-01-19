@@ -113,7 +113,7 @@ concurrency:
 jobs:
   tests:
     name: Unit Tests
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: bcgov/action-test-and-analyse-java@main
         with:
@@ -139,7 +139,7 @@ No triggers are provided so tests will always run.  SonarCloud is skipped.
 jobs:
   tests:
     name: Unit Tests
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: bcgov/action-test-and-analyse-java@main
         with:
@@ -159,7 +159,7 @@ Test projects in multiple directories in parallel.  This time `repository` and `
 jobs:
   tests:
     name: Unit Tests
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         dir: [backend, frontend]
