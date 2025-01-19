@@ -3,9 +3,9 @@
 * **sonar_project_token has been renamed sonar_token**
 
 <!-- Badges -->
-[![Issues](https://img.shields.io/github/issues/bcgov-nr/action-test-and-analyse-java)](/../../issues)
-[![Pull Requests](https://img.shields.io/github/issues-pr/bcgov-nr/action-test-and-analyse-java)](/../../pulls)
-[![MIT License](https://img.shields.io/github/license/bcgov-nr/action-test-and-analyse-java.svg)](/LICENSE)
+[![Issues](https://img.shields.io/github/issues/bcgov/action-test-and-analyse-java)](/../../issues)
+[![Pull Requests](https://img.shields.io/github/issues-pr/bcgov/action-test-and-analyse-java)](/../../pulls)
+[![MIT License](https://img.shields.io/github/license/bcgov/action-test-and-analyse-java.svg)](/LICENSE)
 [![Lifecycle](https://img.shields.io/badge/Lifecycle-Experimental-339999)](https://github.com/bcgov/repomountie/blob/master/doc/lifecycle-badges.md)
 
 <!-- Reference-Style link -->
@@ -19,12 +19,12 @@ This action runs tests, dependent on triggers, optionally sending results and co
 
 Conditional triggers are used to determine whether tests need to be run.  If triggers are matched, then the appropriate code has changed and should be tested.  Tests always run if no triggers are provided.  Untriggered runs do little other than report a success.
 
-Only Java is supported by this action.  Please see our [JavaScript action](https://github.com/bcgov-nr/action-test-and-analyse) or upcoming Python action as required.
+Only Java is supported by this action.  Please see our [JavaScript action](https://github.com/bcgov/action-test-and-analyse) or upcoming Python action as required.
 
 # Usage
 
 ```yaml
-- uses: bcgov-nr/action-test-and-analyse-java@main
+- uses: bcgov/action-test-and-analyse-java@main
   with:
     ### Required
 
@@ -113,9 +113,9 @@ concurrency:
 jobs:
   tests:
     name: Unit Tests
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
-      - uses: bcgov-nr/action-test-and-analyse-java@main
+      - uses: bcgov/action-test-and-analyse-java@main
         with:
           commands: |
             ./mvnw test
@@ -139,9 +139,9 @@ No triggers are provided so tests will always run.  SonarCloud is skipped.
 jobs:
   tests:
     name: Unit Tests
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
-      - uses: bcgov-nr/action-test-and-analyse-java@main
+      - uses: bcgov/action-test-and-analyse-java@main
         with:
           commands: |
             ./mvnw test
@@ -159,7 +159,7 @@ Test projects in multiple directories in parallel.  This time `repository` and `
 jobs:
   tests:
     name: Unit Tests
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         dir: [backend, frontend]
@@ -172,7 +172,7 @@ jobs:
             triggers: ('backend/' 'charts/backend')
     steps:
       - uses: actions/checkout@v4
-      - uses: bcgov-nr/action-test-and-analyse-java@main
+      - uses: bcgov/action-test-and-analyse-java@main
         with:
           commands: |
             ./mvnw test
