@@ -72,7 +72,7 @@ runs:
     - id: diff
       uses: bcgov/action-diff-triggers@v0.2.0
       with:
-        triggers: ${{ github.event_name == 'pull_request' && inputs.triggers || '' }}
+        triggers: ${{ (github.event_name == 'pull_request' && inputs.triggers) || '' }}
         diff_branch: ${{ inputs.diff_branch }}
 
     - uses: actions/checkout@v4
