@@ -70,19 +70,19 @@ runs:
 
     # Send triggers to diff action, but only for pull requests
     - id: diff
-      uses: bcgov/action-diff-triggers@v0.2.0
+      uses: bcgov/action-diff-triggers@0d193029efd26c76aeacaa84aba3328de8198370 # v0.2.0
       with:
         triggers: ${{ (github.event_name == 'pull_request' && inputs.triggers) || '' }}
         diff_branch: ${{ inputs.diff_branch }}
 
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       with:
         fetch-depth: 0
         repository: ${{ inputs.repository }}
         ref: ${{ inputs.branch }}
 
     # Setup Java and cache dir
-    - uses: actions/setup-java@v4
+    - uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4
       with:
         cache: ${{ inputs.java-cache }}
         distribution: ${{ inputs.java-distribution }}
@@ -122,4 +122,4 @@ runs:
     # Fix - Clone for action.yml and other verifications
     - name: Checkout Action repo to pass tests
       if: always() && inputs.repository != github.repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
