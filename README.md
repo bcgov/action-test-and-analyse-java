@@ -166,7 +166,7 @@ jobs:
             token: SONAR_TOKEN_FRONTEND
             triggers: ('backend/' 'charts/backend')
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: bcgov/action-test-and-analyse-java@main
         with:
           commands: |
