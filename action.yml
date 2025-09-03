@@ -82,7 +82,7 @@ runs:
         ref: ${{ inputs.branch }}
 
     # Setup Java and cache dir
-    - uses: actions/setup-java@v4
+    - uses: actions/setup-java@v5
       with:
         cache: ${{ inputs.java-cache }}
         distribution: ${{ inputs.java-distribution }}
