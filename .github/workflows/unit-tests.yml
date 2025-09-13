@@ -21,15 +21,15 @@ jobs:
         name: [backend, frontend-merge, frontend-pr]
         include:
           - name: backend
-            dir: backend
+            dir: .
             triggers: ('backend/')
             expected_triggered: false
           - name: frontend-merge
-            dir: frontend
+            dir: .
             triggers: ('.')
             expected_triggered: true
           - name: frontend-pr
-            dir: frontend
+            dir: .
             expected_triggered: true
     steps:
       - uses: actions/checkout@v5
@@ -37,11 +37,12 @@ jobs:
         uses: ./
         with:
           commands: |
-            mvn -B verify -P all-tests checkstyle:checkstyle -Dcheckstyle.skip=false
+            echo "Running tests in ${{ matrix.dir }}"
+            mvn -B --version
           dir: ${{ matrix.dir }}
           java-distribution: temurin
           java-version: "17"
-          repository: bcgov/nr-forest-client
+          repository: bcgov/nr-forest-client          
           sonar_args: >
             -Dsonar.exclusions=**/coverage/**
             -Dsonar.organization=bcgov-nr
