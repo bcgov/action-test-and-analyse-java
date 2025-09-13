@@ -24,7 +24,7 @@ Only Java is supported by this action.  Please see our [JavaScript action](https
 # Usage
 
 ```yaml
-- uses: bcgov/action-test-and-analyse-java@main
+- uses: bcgov/action-test-and-analyse-java@x.y.z
   with:
     ### Required
 
@@ -110,7 +110,7 @@ jobs:
     name: Unit Tests
     runs-on: ubuntu-24.04
     steps:
-      - uses: bcgov/action-test-and-analyse-java@main
+      - uses: bcgov/action-test-and-analyse-java@x.y.z
         with:
           commands: |
             ./mvnw test
@@ -136,7 +136,7 @@ jobs:
     name: Unit Tests
     runs-on: ubuntu-24.04
     steps:
-      - uses: bcgov/action-test-and-analyse-java@main
+      - uses: bcgov/action-test-and-analyse-java@x.y.z
         with:
           commands: |
             ./mvnw test
@@ -167,7 +167,7 @@ jobs:
             triggers: ('backend/' 'charts/backend')
     steps:
       - uses: actions/checkout@v5
-      - uses: bcgov/action-test-and-analyse-java@main
+      - uses: bcgov/action-test-and-analyse-java@x.y.z
         with:
           commands: |
             ./mvnw test
@@ -183,6 +183,31 @@ jobs:
           triggers: ${{ matrix.triggers }}
           repository: bcgov/quickstart-openshift
           branch: main
+```
+
+# Outputs
+
+| Output    | Description                                |
+| --------- | ------------------------------------------ |
+| triggered | Whether the action was triggered based on path changes (true/false) |
+
+Has the action been triggered by path changes? \[true|false\]
+
+```yaml
+- id: test
+  uses: bcgov/action-test-and-analyse-java@x.y.z
+  with:
+    commands: |
+      mvn -B verify -P all-tests checkstyle:checkstyle -Dcheckstyle.skip=false
+    dir: backend
+    java-version: "17"
+    triggers: ('backend/')
+
+- if: steps.test.outputs.triggered == 'true'
+  run: echo "✅ Tests were triggered by path changes"
+
+- if: steps.test.outputs.triggered == 'false'
+  run: echo "ℹ️ Tests were not triggered (no matching path changes)"
 ```
 
 # Sonar Project Token

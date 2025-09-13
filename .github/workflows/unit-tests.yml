@@ -18,17 +18,25 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
-      - uses: ./
+      - id: action
+        uses: ./
         with:
           commands: |
             mvn -B verify -P all-tests checkstyle:checkstyle -Dcheckstyle.skip=false
           dir: backend
           java-distribution: temurin
           java-version: "17"
-          repository: bcgov/nr-forest-client          
+          repository: bcgov/nr-forest-client
           sonar_args: >
             -Dsonar.exclusions=**/coverage/**
             -Dsonar.organization=bcgov-nr
             -Dsonar.projectKey=action-test-and-analyse-java
           sonar_token: ${{ secrets.SONAR_TOKEN }}
 
+      - name: Check triggered output
+        run: |
+          echo "Triggered: ${{ steps.action.outputs.triggered }}"
+          if [ "${{ steps.action.outputs.triggered }}" != "true" ]; then
+            echo "❌ Expected 'true' but got: ${{ steps.action.outputs.triggered }}"
+            exit 1
+          fi
