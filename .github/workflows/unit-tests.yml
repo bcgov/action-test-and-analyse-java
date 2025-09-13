@@ -38,12 +38,7 @@ jobs:
           echo "🔍 Verifying triggered output"
           echo "Actual: ${{ steps.action.outputs.triggered }}"
           
-          # Check that the output exists and is a valid boolean string
-          if [ -z "${{ steps.action.outputs.triggered }}" ]; then
-            echo "❌ triggered output is empty or missing"
-            exit 1
-          fi
-          
+          # Check that the output is a valid boolean string
           if [ "${{ steps.action.outputs.triggered }}" != "true" ] && [ "${{ steps.action.outputs.triggered }}" != "false" ]; then
             echo "❌ triggered output has invalid value: ${{ steps.action.outputs.triggered }}"
             echo "Expected: 'true' or 'false'"
