@@ -103,36 +103,13 @@ runs:
         server-id: "github"
 
     # Run tests, hopefully generating coverage for SonarCloud
-    - if: steps.diff.outputs.triggered == 'true'
+    - name: Run Tests
+      if: steps.diff.outputs.triggered == 'true'
       shell: bash
       working-directory: ${{ inputs.dir }}
       run: |
-        echo "🚀 Running test commands in ${{ inputs.dir }}..."
-        echo "Commands: ${{ inputs.commands }}"
-
-        # Run Tests with error handling
-        if ! (${{ inputs.commands }}); then
-          echo ""
-          echo "❌ Test commands failed!"
-          echo ""
-          echo "🔧 Common troubleshooting steps:"
-          echo "   1. Check if pom.xml or build.gradle exists and has test goals"
-          echo "   2. Verify all dependencies are installed (mvn clean install or gradle build)"
-          echo "   3. Check if test files exist and are properly configured"
-          echo "   4. Ensure Java version compatibility"
-          echo ""
-          echo "📋 Debug information:"
-          echo "   - Working directory: $(pwd)"
-          echo "   - Java version: $(java -version 2>&1 | head -1)"
-          echo "   - Maven version: $(mvn --version 2>/dev/null | head -1 || echo 'Maven not found')"
-          echo "   - Gradle version: $(./gradlew --version 2>/dev/null | head -1 || echo 'Gradle wrapper not found')"
-          echo "   - Available files:"
-          ls -la | head -10 || echo "   (directory listing failed)"
-          echo ""
-          exit 1
-        fi
-
-        echo "✅ Test commands completed successfully"
+        # Run tests
+        ${{ inputs.commands }}
 
     ### Optional SonarCloud
 
