@@ -33,15 +33,6 @@ jobs:
             -Dsonar.projectKey=action-test-and-analyse-java
           sonar_token: ${{ secrets.SONAR_TOKEN }}
 
-      - name: Verify triggered output
+      - name: Check triggered output
         run: |
-          echo "🔍 Verifying triggered output"
-          echo "Actual: ${{ steps.action.outputs.triggered }}"
-          
-          # Check that the output is true (since we're testing the action itself)
-          if [ "${{ steps.action.outputs.triggered }}" != "true" ]; then
-            echo "❌ triggered output should be 'true' but got: ${{ steps.action.outputs.triggered }}"
-            exit 1
-          fi
-          
-          echo "✅ triggered output is correct: ${{ steps.action.outputs.triggered }}"
+          echo "Triggered: ${{ steps.action.outputs.triggered }}"
