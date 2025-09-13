@@ -38,11 +38,10 @@ jobs:
           echo "🔍 Verifying triggered output"
           echo "Actual: ${{ steps.action.outputs.triggered }}"
           
-          # Check that the output is a valid boolean string
-          if [ "${{ steps.action.outputs.triggered }}" != "true" ] && [ "${{ steps.action.outputs.triggered }}" != "false" ]; then
-            echo "❌ triggered output has invalid value: ${{ steps.action.outputs.triggered }}"
-            echo "Expected: 'true' or 'false'"
+          # Check that the output is true (since we're testing the action itself)
+          if [ "${{ steps.action.outputs.triggered }}" != "true" ]; then
+            echo "❌ triggered output should be 'true' but got: ${{ steps.action.outputs.triggered }}"
             exit 1
           fi
           
-          echo "✅ triggered output is valid: ${{ steps.action.outputs.triggered }}"
+          echo "✅ triggered output is correct: ${{ steps.action.outputs.triggered }}"
