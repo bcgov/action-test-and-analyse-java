@@ -36,3 +36,7 @@ jobs:
       - name: Check triggered output
         run: |
           echo "Triggered: ${{ steps.action.outputs.triggered }}"
+          if [ "${{ steps.action.outputs.triggered }}" != "true" ]; then
+            echo "❌ Expected 'true' but got: ${{ steps.action.outputs.triggered }}"
+            exit 1
+          fi
