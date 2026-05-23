@@ -113,7 +113,21 @@ runs:
 
     ### Optional SonarCloud
 
-    - if: inputs.sonar_token && steps.diff.outputs.triggered == 'true'
+    - id: validate-sonar-token
+      if: steps.diff.outputs.triggered == 'true'
+      shell: bash
+      run: |
+        # Validate SonarCloud Token
+        CLEAN_TOKEN=$(echo "${{ inputs.sonar_token }}" | xargs)
+
+        if [ -z "$CLEAN_TOKEN" ]; then
+          echo "::warning title=SonarCloud Skipped::⚠️ SonarCloud token (sonar_token) is missing or empty. Skipping SonarCloud analysis. If you want to enable SonarCloud, ensure the SONAR_TOKEN repository secret is set and passed correctly."
+          echo "run_sonar=false" >> $GITHUB_OUTPUT
+        else
+          echo "run_sonar=true" >> $GITHUB_OUTPUT
+        fi
+
+    - if: steps.validate-sonar-token.outputs.run_sonar == 'true' && steps.diff.outputs.triggered == 'true'
       env:
         SONAR_TOKEN: ${{ inputs.sonar_token }}
       shell: bash
