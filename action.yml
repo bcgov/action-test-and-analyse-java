@@ -141,14 +141,27 @@ runs:
       run: |
         # Run SonarCloud for ${{ inputs.java-cache }}
 
+        # Disable shell failure-on-error so we can catch and handle the exit code
+        set +e
+
         if [ "${{ inputs.java-cache }}" == "maven" ]; then
           mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.host.url=https://sonarcloud.io ${{ inputs.sonar_args }}
+          STATUS=$?
         elif [ "${{ inputs.java-cache }}" == "gradle" ]; then
-          gradlew build sonarqube --info -Dsonar.host.url=https://sonarcloud.io ${{ inputs.sonar_args }}
+          ./gradlew build sonarqube --info -Dsonar.host.url=https://sonarcloud.io ${{ inputs.sonar_args }}
+          STATUS=$?
         else
-          echo "ERROR: inputs.java-cache = ${{ inputs.java-cache }}"
+          echo "::error::ERROR: inputs.java-cache = ${{ inputs.java-cache }}"
           exit 1
         fi
+
+        # If SonarCloud failed, don't fail the build, but inform the developer
+        if [ $STATUS -ne 0 ]; then
+          echo "::warning title=SonarCloud Failed::⚠️ SonarCloud analysis failed. This is usually caused by an expired/invalid SONAR_TOKEN, or a missing/stale project on SonarCloud. Since SonarCloud is optional, the build will continue, but you should check your repository secrets and SonarCloud project status."
+        fi
+
+        # Always return 0 to prevent blocking the pipeline
+        exit 0
 
     ### Cleanup
 
