@@ -43,6 +43,11 @@ inputs:
     default: "__OMITTED__"
     pattern: "^[a-zA-Z0-9]{20,}$"
 
+  sonar_enforce_compliance:
+    description: Fail the build if SonarCloud fails. If false, only warn.
+    default: "false"
+    pattern: "^(true|false)$"
+
   triggers:
     description: Paths (array) used to trigger a build; e.g. ('./backend/' './frontend/)
 
@@ -155,12 +160,17 @@ runs:
           exit 1
         fi
 
-        # If SonarCloud failed, don't fail the build, but inform the developer
+        # If SonarCloud failed, handle it based on compliance requirements
         if [ $STATUS -ne 0 ]; then
-          echo "::warning title=SonarCloud Failed::⚠️ SonarCloud analysis failed. This is usually caused by an expired/invalid SONAR_TOKEN, or a missing/stale project on SonarCloud. Since SonarCloud is optional, the build will continue, but you should check your repository secrets and SonarCloud project status."
+          if [ "${{ inputs.sonar_enforce_compliance }}" == "true" ]; then
+            echo "::error title=SonarCloud Failed::❌ SonarCloud analysis failed (required by sonar_enforce_compliance). Check token, project configuration, or SonarCloud status."
+            exit 1
+          else
+            echo "::warning title=SonarCloud Failed::⚠️ SonarCloud analysis failed. This is usually caused by an expired/invalid SONAR_TOKEN, or a missing/stale project on SonarCloud. Since SonarCloud is optional, the build will continue, but you should check your repository secrets and SonarCloud project status."
+          fi
         fi
 
-        # Always return 0 to prevent blocking the pipeline
+        # Always return 0 to prevent blocking the pipeline for non-blocking fallbacks
         exit 0
 
     ### Cleanup
