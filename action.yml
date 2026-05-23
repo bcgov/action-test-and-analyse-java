@@ -40,6 +40,7 @@ inputs:
 
   sonar_token:
     description: Sonar token, provide unpopulated token for pre-setup (will skip)
+    default: "__OMITTED__"
     pattern: "^[a-zA-Z0-9]{20,}$"
 
   triggers:
@@ -120,7 +121,11 @@ runs:
         # Validate SonarCloud Token
         CLEAN_TOKEN=$(echo "${{ inputs.sonar_token }}" | xargs)
 
-        if [ -z "$CLEAN_TOKEN" ]; then
+        if [ "$CLEAN_TOKEN" = "__OMITTED__" ]; then
+          # Intentionally omitted by the user, skip silently without warning
+          echo "run_sonar=false" >> $GITHUB_OUTPUT
+        elif [ -z "$CLEAN_TOKEN" ]; then
+          # Explicitly provided but resolved to empty string (e.g. empty repository secret)
           echo "::warning title=SonarCloud Skipped::⚠️ SonarCloud token (sonar_token) is missing or empty. Skipping SonarCloud analysis. If you want to enable SonarCloud, ensure the SONAR_TOKEN repository secret is set and passed correctly."
           echo "run_sonar=false" >> $GITHUB_OUTPUT
         else
