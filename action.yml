@@ -45,7 +45,7 @@ inputs:
 
   sonar_enforce_compliance:
     description: Fail the build if SonarCloud fails. If false, only warn.
-    default: "false"
+    default: "true"
     pattern: "^(true|false)$"
 
   triggers:
