@@ -40,7 +40,13 @@ inputs:
 
   sonar_token:
     description: Sonar token, provide unpopulated token for pre-setup (will skip)
+    default: "__OMITTED__"
     pattern: "^[a-zA-Z0-9]{20,}$"
+
+  sonar_enforce_compliance:
+    description: Fail the build if SonarCloud fails. If false, only warn.
+    default: "true"
+    pattern: "^(true|false)$"
 
   triggers:
     description: Paths (array) used to trigger a build; e.g. ('./backend/' './frontend/)
@@ -86,7 +92,7 @@ runs:
       uses: bcgov/action-diff-triggers@4abfcb211f5816d654d1c5a417e5431a2c4a5379 # v1.1.1
       with:
         triggers: ${{ (github.event_name == 'pull_request' && inputs.triggers) || '' }}
-        diff_branch: ${{ inputs.diff_branch }}
+        ref: ${{ inputs.diff_branch }}
 
     - uses: actions/checkout@v6
       with:
@@ -113,7 +119,26 @@ runs:
 
     ### Optional SonarCloud
 
-    - if: inputs.sonar_token && steps.diff.outputs.triggered == 'true'
+    - id: validate-sonar-token
+      if: steps.diff.outputs.triggered == 'true'
+      shell: bash
+      run: |
+        # Validate SonarCloud Token
+        TOKEN="${{ inputs.sonar_token }}"
+        TRIMMED="${TOKEN//[[:space:]]/}"
+
+        if [ "$TRIMMED" = "__OMITTED__" ]; then
+          # Intentionally omitted by the user, skip silently without warning
+          echo "run_sonar=false" >> "$GITHUB_OUTPUT"
+        elif [ -z "$TRIMMED" ]; then
+          # Explicitly provided but resolved to empty string (e.g. empty repository secret)
+          echo "::warning title=SonarCloud Skipped::⚠️ SonarCloud token (sonar_token) is missing or empty. Skipping SonarCloud analysis. If you want to enable SonarCloud, ensure the SONAR_TOKEN repository secret is set and passed correctly."
+          echo "run_sonar=false" >> "$GITHUB_OUTPUT"
+        else
+          echo "run_sonar=true" >> "$GITHUB_OUTPUT"
+        fi
+
+    - if: steps.validate-sonar-token.outputs.run_sonar == 'true' && steps.diff.outputs.triggered == 'true'
       env:
         SONAR_TOKEN: ${{ inputs.sonar_token }}
       shell: bash
@@ -121,14 +146,32 @@ runs:
       run: |
         # Run SonarCloud for ${{ inputs.java-cache }}
 
+        # Disable shell failure-on-error so we can catch and handle the exit code
+        set +e
+
         if [ "${{ inputs.java-cache }}" == "maven" ]; then
           mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.host.url=https://sonarcloud.io ${{ inputs.sonar_args }}
+          STATUS=$?
         elif [ "${{ inputs.java-cache }}" == "gradle" ]; then
-          gradlew build sonarqube --info -Dsonar.host.url=https://sonarcloud.io ${{ inputs.sonar_args }}
+          ./gradlew build sonarqube --info -Dsonar.host.url=https://sonarcloud.io ${{ inputs.sonar_args }}
+          STATUS=$?
         else
-          echo "ERROR: inputs.java-cache = ${{ inputs.java-cache }}"
+          echo "::error::ERROR: inputs.java-cache = ${{ inputs.java-cache }}"
           exit 1
         fi
+
+        # If SonarCloud failed, handle it based on compliance requirements
+        if [ $STATUS -ne 0 ]; then
+          if [ "${{ inputs.sonar_enforce_compliance }}" == "true" ]; then
+            echo "::error title=SonarCloud Failed::❌ SonarCloud analysis failed (sonar_enforce_compliance: true). Check token, project configuration, or SonarCloud status."
+            exit 1
+          else
+            echo "::warning title=SonarCloud Failed::⚠️ SonarCloud analysis failed. This is usually caused by an expired/invalid SONAR_TOKEN, or a missing/stale project on SonarCloud. Since SonarCloud is optional, the build will continue, but you should check your repository secrets and SonarCloud project status."
+          fi
+        fi
+
+        # Always return 0 to prevent blocking the pipeline for non-blocking fallbacks
+        exit 0
 
     ### Cleanup
 

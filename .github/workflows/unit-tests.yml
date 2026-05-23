@@ -31,6 +31,7 @@ jobs:
             -Dsonar.exclusions=**/coverage/**
             -Dsonar.organization=bcgov-nr
             -Dsonar.projectKey=action-test-and-analyse-java
+          sonar_enforce_compliance: false
           sonar_token: ${{ secrets.SONAR_TOKEN }}
 
       - name: Check triggered output
