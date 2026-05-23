@@ -163,7 +163,7 @@ runs:
         # If SonarCloud failed, handle it based on compliance requirements
         if [ $STATUS -ne 0 ]; then
           if [ "${{ inputs.sonar_enforce_compliance }}" == "true" ]; then
-            echo "::error title=SonarCloud Failed::❌ SonarCloud analysis failed (required by sonar_enforce_compliance). Check token, project configuration, or SonarCloud status."
+            echo "::error title=SonarCloud Failed::❌ SonarCloud analysis failed (sonar_enforce_compliance: true). Check token, project configuration, or SonarCloud status."
             exit 1
           else
             echo "::warning title=SonarCloud Failed::⚠️ SonarCloud analysis failed. This is usually caused by an expired/invalid SONAR_TOKEN, or a missing/stale project on SonarCloud. Since SonarCloud is optional, the build will continue, but you should check your repository secrets and SonarCloud project status."
