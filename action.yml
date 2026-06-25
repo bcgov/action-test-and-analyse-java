@@ -94,7 +94,7 @@ runs:
         triggers: ${{ (github.event_name == 'pull_request' && inputs.triggers) || '' }}
         ref: ${{ inputs.diff_branch }}
 
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
       with:
         fetch-depth: 0
         repository: ${{ inputs.repository }}
@@ -178,4 +178,4 @@ runs:
     # Fix - Clone for action.yml and other verifications
     - name: Checkout Action repo to pass tests
       if: always() && inputs.repository != github.repository
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
