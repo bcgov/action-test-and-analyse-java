@@ -75,6 +75,11 @@ outputs:
 runs:
   using: composite
   steps:
+    - name: Deprecation warning
+      shell: bash
+      run: |
+        echo "::warning::This Action has moved to the centralized monorepo. Please update your workflow to use bcgov/actions/test-and-analyse-java instead."
+
     - name: Warnings for breaking changes
       shell: bash
       run: |
