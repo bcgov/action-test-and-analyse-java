@@ -75,6 +75,11 @@ outputs:
 runs:
   using: composite
   steps:
+    - name: Deprecation Warning
+      shell: bash
+      run: |
+        echo "::warning title=Deprecated Action::⚠️ This Action (bcgov/action-test-and-analyse-java) has been deprecated and moved to the centralized bcgov/actions monorepo. Please migrate to the universal action (bcgov/actions/test-and-analyse) with 'language: java' specified instead. This action is no longer maintained."
+
     - name: Warnings for breaking changes
       shell: bash
       run: |
