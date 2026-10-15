@@ -15,6 +15,33 @@
 
 # Test and Analyze with Triggers and SonarCloud
 
+> [!IMPORTANT]
+> **This action has moved to [`bcgov/actions/test-and-analyse`](https://github.com/bcgov/actions/tree/main/test-and-analyse).** This repository is retiring and will be archived. Update workflows to the new path, pinned to a [release](https://github.com/bcgov/actions/releases) (not `@main`):
+>
+> ```yaml
+> - uses: bcgov/actions/test-and-analyse@vX.Y.Z
+>   with:
+>     language: java
+>     java_version: "21"
+>     commands: |
+>       mvn -B verify sonar:sonar \
+>         -Dsonar.organization=bcgov-sonarcloud \
+>         -Dsonar.projectKey=bcgov_your-project-key
+>     dir: backend
+>     sonar_token: ${{ secrets.SONAR_TOKEN }}
+> ```
+>
+> | Old input | New input |
+> | --- | --- |
+> | _(none)_ | `language: java` (required) |
+> | `java-version` | `java_version` |
+> | `java-distribution` | `java_distribution` |
+> | `java-cache` | `cache` (auto-detected if omitted) |
+> | `diff_branch` | `ref` |
+> | `sonar_enforce_compliance` | Removed. Run Sonar in `commands`; a failing command fails the job. |
+>
+> Other inputs keep their names. See [Migrating from the standalone actions](https://github.com/bcgov/actions/tree/main/test-and-analyse#migrating-from-the-standalone-actions).
+
 This action runs tests, dependent on triggers, optionally sending results and coverage to [SonarCloud](https://sonarcloud.io).  Test and SonarCloud can be configured to comment on pull requests or stop failing workflows.
 
 Conditional triggers are used to determine whether tests need to be run.  If triggers are matched, then the appropriate code has changed and should be tested.  Tests always run if no triggers are provided.  Untriggered runs do little other than report a success.
