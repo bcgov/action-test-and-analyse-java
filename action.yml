@@ -75,6 +75,11 @@ outputs:
 runs:
   using: composite
   steps:
+    - name: Action moved
+      shell: bash
+      run: |
+        echo "::warning title=Action moved::This Action has moved to bcgov/actions/test-and-analyse (set language: java). Update workflows to bcgov/actions/test-and-analyse (pin a release, not @main). Renames: language: java required; java-version → java_version; java-distribution → java_distribution; java-cache → cache; diff_branch → ref; sonar_enforce_compliance removed. See https://github.com/bcgov/actions/tree/main/test-and-analyse"
+
     - name: Warnings for breaking changes
       shell: bash
       run: |
